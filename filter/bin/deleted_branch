@@ -1,0 +1,25 @@
+#!/bin/sh
+
+set -e
+
+pattern=$1
+
+if [ -z "$GITHUB_EVENT_PATH" ]; then
+  echo "\$GITHUB_EVENT_PATH" not found
+  exit 1
+fi
+
+DELETE_EVENT_REF_TYPE=$(jq --raw-output .ref_type "$GITHUB_EVENT_PATH")
+if [ "$DELETE_EVENT_REF_TYPE" != "branch" ]; then
+  echo "ref_type is not branch: ${DELETE_EVENT_REF_TYPE}"
+  exit 1
+fi
+
+DELETE_EVENT_REF=$(jq --raw-output .ref "$GITHUB_EVENT_PATH")
+
+if echo $DELETE_EVENT_REF | grep -Eq $pattern ; then
+  exit 0
+fi
+
+echo "deleted_branch does not match"
+exit 78
